@@ -31,18 +31,20 @@ export default {
 
     const submit = async () => {
       try {
-        const { data } = await axios.post("/login", state.form, {
+        const data = await axios.post("/api/login", state.form, {
           headers: {
             'Content-Type': 'application/json',
           }
         });
-        
-        if (data.accessToken) {
-          console.log("로그인 성공, 토큰:", data.accessToken);
-          localStorage.setItem('accessToken', data.accessToken);
+        console.log(data.headers)
+        if (data.headers.accesstoken) {
+          console.log("로그인 성공, 토큰:", data.headers.accesstoken);
+          localStorage.setItem('accessToken', data.headers.accesstoken);
+          localStorage.setItem('name', data.body.name); // 사용자 이름 저장 (서버 응답에 이름이 포함되어 있다고 가정)
           alert("로그인에 성공했습니다.");
-          router.push('/'); // 홈 페이지로 이동
+          router.push('/'); 
         } else {
+          console.log(data.headers.accesstoken)
           alert("로그인에 실패했습니다. 응답에 토큰이 없습니다.");
         }
       } catch (error) {
@@ -71,7 +73,6 @@ export default {
   },
 };
 </script>
-
 
 <style>
 .login-form {
