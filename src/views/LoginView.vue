@@ -1,17 +1,26 @@
 <template>
-  <form @submit.prevent="submit" class="login-form">
-    <label for="email">
-      <span>이메일</span>
-      <input type="text" id="email" placeholder="aaa@example" v-model="state.form.email" />
-    </label>
-    <label for="password">
-      <span>패스워드</span>
-      <input type="password" id="password" v-model="state.form.password" />
-    </label>
-    <hr />
-    <button type="submit">로그인</button>
-  </form>
+  <div class="page-container">
+    <div class="header-container">
+      <span class="logo"></span>
+    </div>
+    <div class="login-container">
+      <form @submit.prevent="submit" class="login-form">
+        <label for="email">
+          <span>이메일</span>
+          <input type="text" id="email" placeholder="aaa@example" v-model="state.form.email" />
+        </label>
+        <label for="password">
+          <span>패스워드</span>
+          <input type="password" id="password" v-model="state.form.password" />
+        </label>
+        <hr />
+        <button type="submit" id="loginBtn">로그인</button>
+      </form>
+    </div>
+  </div>
 </template>
+
+
 
 <script>
 import axios from "axios";
@@ -36,11 +45,13 @@ export default {
             'Content-Type': 'application/json',
           }
         });
+
         console.log(data.headers)
+        console.log(data.data.name)
         if (data.headers.accesstoken) {
           console.log("로그인 성공, 토큰:", data.headers.accesstoken);
-          localStorage.setItem('accessToken', data.headers.accesstoken);
-          localStorage.setItem('name', data.body.name); // 사용자 이름 저장 (서버 응답에 이름이 포함되어 있다고 가정)
+          localStorage.setItem('accesstoken', data.headers.accesstoken);
+          localStorage.setItem('name', data.data.name); // 사용자 이름 저장 (서버 응답에 이름이 포함되어 있다고 가정)
           alert("로그인에 성공했습니다.");
           router.push('/'); 
         } else {
@@ -75,12 +86,41 @@ export default {
 </script>
 
 <style>
+.page-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.header-container {
+  text-align: center;
+  padding: 20px 0;
+  background-color: none;
+}
+
+.logo {
+  background-image: url('../assets/logo.png');
+  background-size: contain; /* 이미지가 요소 안에 맞도록 조정 */
+  background-repeat: no-repeat; /* 이미지 반복 안 함 */
+  background-position: center; /* 이미지 중앙에 배치 */
+  width: 300px;  /* 원하는 크기로 설정 */
+  height: 80px;  /* 원하는 크기로 설정 */
+}
+
+.login-container {
+  flex: 0.5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .login-form {
   background-color: #fff;
   padding: 20px;
   border-radius: 5px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   width: 300px;
+  max-width: 100%;
 }
 
 label {
@@ -88,8 +128,7 @@ label {
   margin-bottom: 10px;
 }
 
-input[type="text"],
-input[type="password"] {
+input[type="text"], input[type="password"] {
   width: calc(100% - 20px);
   padding: 8px;
   font-size: 16px;
@@ -97,17 +136,17 @@ input[type="password"] {
   border-radius: 4px;
 }
 
-button {
+#loginBtn {
   width: 100%;
   padding: 10px;
-  background-color: #007bff;
+  background-color: #4679BD;
   color: #fff;
   border: none;
   border-radius: 4px;
   cursor: pointer;
 }
 
-button:hover {
+#loginBtn:hover {
   background-color: #0056b3;
 }
 </style>
