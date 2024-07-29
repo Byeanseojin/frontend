@@ -1,16 +1,16 @@
 <template>
   <div class="home">
-    <header class="header">
+    <div class="header-container">
       <span class="logo"></span>
-    </header>
+    </div>
     <nav class="navigation-bar">
       <span v-if="isLoggedIn" class="user-info">
         ❣️{{ userName }}님 이용해 주셔서 감사합니다❣️
         <span @click="logout" id="logoutBtn">로그아웃</span>
       </span>
       <span v-else class="nav-login">
-        <span @click="goToLogin" id="loginBtn">로그인</span>
-        <span @click="goToSignup" id="signupBtn">회원가입</span>
+        <span @click="goToLogin" id="loginLink">로그인</span>
+        <span @click="goToSignup" id="signupLink">회원가입</span>
       </span>
     </nav>
     <div class="main-content">
@@ -26,8 +26,15 @@
         <textarea v-model="standard" readonly></textarea>
       </div>
     </div>
+    <div v-if="isLoggedIn" class="recent-translations">
+      <h2>최근 번역 기록</h2>
+      <ul>
+        <li v-for="(translation, index) in recentTranslations" :key="index">{{ translation }}</li>
+      </ul>
+    </div>
   </div>
 </template>
+
 
 <script>
 import { ref, onMounted } from "vue";
@@ -44,7 +51,7 @@ export default {
 
 
     const checkLoginStatus = () => {
-      const token = localStorage.getItem('accessToken');
+      const token = localStorage.getItem('accesstoken');
       const name = localStorage.getItem('name');
       if (token && name) {
         isLoggedIn.value = true;
@@ -58,7 +65,7 @@ export default {
     onMounted(checkLoginStatus);
 
     const logout = () => {
-      localStorage.removeItem('accessToken');
+      localStorage.removeItem('accesstoken');
       localStorage.removeItem('userName');
       isLoggedIn.value = false;
       userName.value = "";
@@ -75,16 +82,33 @@ export default {
 
     const translate = async () => {
       try {
-        const response = await axios.post('/api/main', {
-          accessToken: localStorage.getItem('accessToken'),
+        let response;
+        if (localStorage.getItem('accesstoken') == null){
+          response = await axios.post('/aiapi/v1/translate', 
+        {
+          content: slang.value
+        }
+      )
+      standard.value = response.data.content;
+
+        }
+        else{
+         response = await axios.post('/api/main', 
+        {
           slang: slang.value
-        });
-        standard.value = response.data.standard;
+        },
+        {
+          headers : {accesstoken: localStorage.getItem('accesstoken')}
+        }
+      );
+      standard.value = response.data.standard;
+    }
+        
       } catch (error) {
         console.error("번역 중 오류 발생:", error);
         alert("번역에 실패했습니다. 다시 시도해주세요.");
       }
-    };
+  };
 
     return { 
       userName, 
@@ -113,7 +137,7 @@ body, html {
   height: 100%;
 }
 
-.header {
+.header-container {
   display: flex;
   justify-content: center; /* 로고를 좌우 중앙으로 정렬 */
   align-items: center;
@@ -214,21 +238,45 @@ textarea {
   background-color: #f8a2b0; /* 마우스 오버 시 배경색 변경 */
 }
 
+.recent-translations {
+  margin: 20px 100px;
+  padding: 20px;
+  background-color: white;
+  border: 2px solid #4679BD;
+  border-radius: 20px;
+}
+
+.recent-translations h2 {
+  color: #4679BD;
+  margin-bottom: 10px;
+}
+
+.recent-translations ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.recent-translations li {
+  margin-bottom: 10px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  background-color: #f9f9f9;
+}
+
 @media (max-width: 799px) {
   .main-content {
     flex-direction: column;
-    margin: 20px 40px;
+    margin: 0px 60px 0px 15px;
   }
 
   .MZLanguage-box, .translated-box {
     width: 100%;
-    margin-bottom: 20px;
+    margin:0px 0px 30px 0px;    
     height: 250px;
   }
 
-  .MZLanguage-box {
-    margin-right: 0;
-  }
+
 }
 
 </style>
