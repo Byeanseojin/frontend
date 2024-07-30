@@ -29,13 +29,14 @@
     <div v-if="isLoggedIn" class="recent-translations">
       <h2>최근 번역 기록</h2>
       <ul>
-        <li v-for="(translation, index) in recentTranslations" :key="index">{{ translation }}</li>
+        <li v-for="(translation, index) in items" :key="index">
+          <div>번역 전: {{ items.slang }}</div>
+          <div>번역 후: {{ items.standard }}</div>
+        </li>
       </ul>
     </div>
   </div>
 </template>
-
-
 <script>
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
@@ -48,27 +49,32 @@ export default {
     const userName = ref("");
     const slang = ref("");
     const standard = ref("");
-
+    const items = ref([]);
 
     const checkLoginStatus = () => {
-      const token = localStorage.getItem('accesstoken');
+      const token = localStorage.getItem('accessToken');
       const name = localStorage.getItem('name');
+      const savedItems = localStorage.getItem('items');
       if (token && name) {
         isLoggedIn.value = true;
         userName.value = name;
+        items.value = JSON.parse(savedItems || '[]');
       } else {
         isLoggedIn.value = false;
         userName.value = "";
+        items.value = [];
       }
     };
 
     onMounted(checkLoginStatus);
 
     const logout = () => {
-      localStorage.removeItem('accesstoken');
-      localStorage.removeItem('userName');
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('name');
+      localStorage.removeItem('items');
       isLoggedIn.value = false;
       userName.value = "";
+      items.value = [];
       alert("로그아웃하였습니다.");
     };
 
@@ -83,32 +89,25 @@ export default {
     const translate = async () => {
       try {
         let response;
-        if (localStorage.getItem('accesstoken') == null){
-          response = await axios.post('/aiapi/v1/translate', 
-        {
-          content: slang.value
+        if (!isLoggedIn.value) {
+          response = await axios.post('/aiapi/v1/translate', {
+            content: slang.value
+          });
+          standard.value = response.data.content;
+        } else {
+          response = await axios.post('/api/main', 
+            { slang: slang.value },
+            { headers: { accessToken: localStorage.getItem('accessToken') } }
+          );
+          standard.value = response.data.standard;
+          items.value = response.data.items;
+          localStorage.setItem('items', JSON.stringify(items.value));
         }
-      )
-      standard.value = response.data.content;
-
-        }
-        else{
-         response = await axios.post('/api/main', 
-        {
-          slang: slang.value
-        },
-        {
-          headers : {accesstoken: localStorage.getItem('accesstoken')}
-        }
-      );
-      standard.value = response.data.standard;
-    }
-        
       } catch (error) {
         console.error("번역 중 오류 발생:", error);
         alert("번역에 실패했습니다. 다시 시도해주세요.");
       }
-  };
+    };
 
     return { 
       userName, 
@@ -118,7 +117,8 @@ export default {
       goToSignup, 
       slang, 
       standard, 
-      translate 
+      translate,
+      items
     };
   },
 };
