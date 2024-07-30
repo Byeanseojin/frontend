@@ -51,7 +51,8 @@ export default {
         if (data.headers.accesstoken) {
           console.log("로그인 성공, 토큰:", data.headers.accesstoken);
           localStorage.setItem('accesstoken', data.headers.accesstoken);
-          localStorage.setItem('name', data.data.name); // 사용자 이름 저장 (서버 응답에 이름이 포함되어 있다고 가정)
+          localStorage.setItem('name', data.data.name); // 사용자 이름 저장 
+          localStorage.setItem('items', JSON.stringify(data.data.items));
           alert("로그인에 성공했습니다.");
           router.push('/'); 
         } else {
