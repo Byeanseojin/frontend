@@ -16,7 +16,7 @@
     <div class="main-content">
       <div class="MZLanguage-box">
         <h2>MZ어</h2>
-        <textarea v-model="slang"></textarea>
+        <textarea v-model="slang" @keyup.enter.prevent="translate"></textarea>
         <div class="button-container">
           <button class="translate-btn" @click="translate">번역하기</button>
         </div>
@@ -30,8 +30,8 @@
       <h2>최근 번역 기록</h2>
       <ul>
         <li v-for="(translation, index) in items" :key="index">
-          <div>번역 전: {{ items.slang }}</div>
-          <div>번역 후: {{ items.standard }}</div>
+          <div>번역 전: {{ translation.slang }}</div>
+          <div>번역 후: {{ translation.standard }}</div>
         </li>
       </ul>
     </div>
@@ -52,7 +52,7 @@ export default {
     const items = ref([]);
 
     const checkLoginStatus = () => {
-      const token = localStorage.getItem('accessToken');
+      const token = localStorage.getItem('accesstoken');
       const name = localStorage.getItem('name');
       const savedItems = localStorage.getItem('items');
       if (token && name) {
@@ -69,7 +69,7 @@ export default {
     onMounted(checkLoginStatus);
 
     const logout = () => {
-      localStorage.removeItem('accessToken');
+      localStorage.removeItem('accesstoken');
       localStorage.removeItem('name');
       localStorage.removeItem('items');
       isLoggedIn.value = false;
@@ -87,6 +87,10 @@ export default {
     };
 
     const translate = async () => {
+      if (!slang.value.trim()) {
+        alert("번역할 내용을 입력해주세요.");
+        return;
+      }
       try {
         let response;
         if (!isLoggedIn.value) {
@@ -94,29 +98,34 @@ export default {
             content: slang.value
           });
           standard.value = response.data.content;
+
         } else {
-          response = await axios.post('/api/main', 
+          response = await axios.post('/api/main',
             { slang: slang.value },
-            { headers: { accessToken: localStorage.getItem('accessToken') } }
+            {
+
+              headers: { accesstoken: localStorage.getItem('accesstoken') }
+            }
           );
           standard.value = response.data.standard;
           items.value = response.data.items;
           localStorage.setItem('items', JSON.stringify(items.value));
         }
+
       } catch (error) {
         console.error("번역 중 오류 발생:", error);
         alert("번역에 실패했습니다. 다시 시도해주세요.");
       }
     };
 
-    return { 
-      userName, 
-      logout, 
-      isLoggedIn, 
-      goToLogin, 
-      goToSignup, 
-      slang, 
-      standard, 
+    return {
+      userName,
+      logout,
+      isLoggedIn,
+      goToLogin,
+      goToSignup,
+      slang,
+      standard,
       translate,
       items
     };
@@ -125,7 +134,8 @@ export default {
 </script>
 
 <style>
-body, html {
+body,
+html {
   margin: 0;
   padding: 0;
   height: 100%;
@@ -139,7 +149,8 @@ body, html {
 
 .header-container {
   display: flex;
-  justify-content: center; /* 로고를 좌우 중앙으로 정렬 */
+  justify-content: center;
+  /* 로고를 좌우 중앙으로 정렬 */
   align-items: center;
   padding: 20px;
   background-color: white;
@@ -147,11 +158,16 @@ body, html {
 
 .logo {
   background-image: url('../assets/logo.png');
-  background-size: contain; /* 이미지가 요소 안에 맞도록 조정 */
-  background-repeat: no-repeat; /* 이미지 반복 안 함 */
-  background-position: center; /* 이미지 중앙에 배치 */
-  width: 300px;  /* 원하는 크기로 설정 */
-  height: 100px;  /* 원하는 크기로 설정 */
+  background-size: contain;
+  /* 이미지가 요소 안에 맞도록 조정 */
+  background-repeat: no-repeat;
+  /* 이미지 반복 안 함 */
+  background-position: center;
+  /* 이미지 중앙에 배치 */
+  width: 300px;
+  /* 원하는 크기로 설정 */
+  height: 100px;
+  /* 원하는 크기로 설정 */
 }
 
 .navigation-bar {
@@ -161,7 +177,8 @@ body, html {
   padding: 10px 20px;
 }
 
-.nav-login span, #logoutBtn {
+.nav-login span,
+#logoutBtn {
   margin-left: 10px;
   cursor: pointer;
   color: #4679BD;
@@ -197,7 +214,8 @@ body, html {
 
 .MZLanguage-box {
   position: relative;
-  padding-bottom: 50px; /* 버튼을 위한 공간 확보 */
+  padding-bottom: 50px;
+  /* 버튼을 위한 공간 확보 */
   margin-right: 50px;
 }
 
@@ -230,12 +248,15 @@ textarea {
   padding: 10px 20px;
   color: black;
   cursor: pointer;
-  width: auto; /* 내용에 맞게 너비 조정 */
-  white-space: nowrap; /* 텍스트가 한 줄로 유지되도록 함 */
+  width: auto;
+  /* 내용에 맞게 너비 조정 */
+  white-space: nowrap;
+  /* 텍스트가 한 줄로 유지되도록 함 */
 }
 
 .translate-btn:hover {
-  background-color: #f8a2b0; /* 마우스 오버 시 배경색 변경 */
+  background-color: #f8a2b0;
+  /* 마우스 오버 시 배경색 변경 */
 }
 
 .recent-translations {
@@ -270,13 +291,13 @@ textarea {
     margin: 0px 60px 0px 15px;
   }
 
-  .MZLanguage-box, .translated-box {
+  .MZLanguage-box,
+  .translated-box {
     width: 100%;
-    margin:0px 0px 30px 0px;    
+    margin: 0px 0px 30px 0px;
     height: 250px;
   }
 
 
 }
-
 </style>
