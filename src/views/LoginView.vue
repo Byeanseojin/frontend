@@ -1,7 +1,9 @@
 <template>
   <div class="page-container">
     <div class="header-container">
-      <span class="logo"></span>
+      <router-link to="/" class="logo-link">
+        <span class="logo"></span>
+      </router-link>
     </div>
     <div class="login-container">
       <form @submit.prevent="submit" class="login-form">
@@ -19,8 +21,6 @@
     </div>
   </div>
 </template>
-
-
 
 <script>
 import axios from "axios";
@@ -51,10 +51,10 @@ export default {
         if (data.headers.accesstoken) {
           console.log("로그인 성공, 토큰:", data.headers.accesstoken);
           localStorage.setItem('accesstoken', data.headers.accesstoken);
-          localStorage.setItem('name', data.data.name); // 사용자 이름 저장 
+          localStorage.setItem('name', data.data.name);
           localStorage.setItem('items', JSON.stringify(data.data.items));
           alert("로그인에 성공했습니다.");
-          router.push('/'); 
+          router.push('/');
         } else {
           console.log(data.headers.accesstoken)
           alert("로그인에 실패했습니다. 응답에 토큰이 없습니다.");
@@ -99,52 +99,75 @@ export default {
   background-color: none;
 }
 
+.logo-link {
+  display: inline-block;
+  cursor: pointer;
+}
+
 .logo {
   background-image: url('../assets/logo.png');
-  background-size: contain; /* 이미지가 요소 안에 맞도록 조정 */
-  background-repeat: no-repeat; /* 이미지 반복 안 함 */
-  background-position: center; /* 이미지 중앙에 배치 */
-  width: 300px;  /* 원하는 크기로 설정 */
-  height: 80px;  /* 원하는 크기로 설정 */
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  width: 300px;
+  height: 80px;
+  display: inline-block;
 }
 
 .login-container {
-  flex: 0.5;
+  flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 20px;
 }
 
 .login-form {
   background-color: #fff;
-  padding: 20px;
+  color: #495f7a;
+  padding: 30px;
   border-radius: 5px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  width: 300px;
-  max-width: 100%;
+  width: 100%;
+  max-width: 400px;
 }
 
 label {
   display: block;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
 }
 
-input[type="text"], input[type="password"] {
-  width: calc(100% - 20px);
-  padding: 8px;
+label span {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+input[type="text"], 
+input[type="password"] {
+  width: 100%;
+  padding: 10px;
   font-size: 16px;
   border: 1px solid #ccc;
   border-radius: 4px;
+  box-sizing: border-box;
+}
+
+hr {
+  margin: 20px 0;
+  border: none;
+  border-top: 1px solid #eee;
 }
 
 #loginBtn {
   width: 100%;
-  padding: 10px;
+  padding: 12px;
   background-color: #4679BD;
   color: #fff;
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  font-size: 16px;
 }
 
 #loginBtn:hover {
