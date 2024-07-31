@@ -1,7 +1,9 @@
 <template>
   <div class="page-container">
     <div class="header-container">
-      <span class="logo"></span>
+      <router-link to="/" class="logo-link">
+        <span class="logo"></span>
+      </router-link>
     </div>
     <div class="signup-container">
       <form @submit.prevent="submit" class="signup-form">
@@ -50,6 +52,7 @@ export default {
         mobile: ""
       },
       emailError: "",
+      passwordError: "",
       nameError: "",
       mobileError: ""
     });
@@ -143,18 +146,19 @@ export default {
   background-color: none;
 }
 
+.logo-link {
+  display: inline-block;
+  cursor: pointer;
+}
+
 .logo {
   background-image: url('../assets/logo.png');
   background-size: contain;
-  /* 이미지가 요소 안에 맞도록 조정 */
   background-repeat: no-repeat;
-  /* 이미지 반복 안 함 */
   background-position: center;
-  /* 이미지 중앙에 배치 */
   width: 300px;
-  /* 원하는 크기로 설정 */
   height: 80px;
-  /* 원하는 크기로 설정 */
+  display: inline-block;
 }
 
 .signup-container {
@@ -167,6 +171,7 @@ export default {
 
 .signup-form {
   background-color: #fff;
+  color: #344760;
   padding: 20px;
   border-radius: 5px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
