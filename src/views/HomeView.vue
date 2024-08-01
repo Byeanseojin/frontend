@@ -18,7 +18,9 @@
         <h2>MZ어</h2>
         <textarea v-model="slang" @keyup.enter.prevent="translate"></textarea>
         <div class="button-container">
-          <button class="translate-btn" @click="translate">번역하기</button>
+          <button class="translate-btn" @click="translate" :disabled="isTranslating">
+            {{ isTranslating ? '번역 중...' : '번역하기' }}
+          </button>
         </div>
       </div>
       <div class="translated-box">
@@ -37,6 +39,7 @@
     </div>
   </div>
 </template>
+
 <script>
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
@@ -50,21 +53,22 @@ export default {
     const slang = ref("");
     const standard = ref("");
     const items = ref([]);
+    const isTranslating = ref(false);
 
     const checkLoginStatus = () => {
-      const token = localStorage.getItem('accesstoken');
-      const name = localStorage.getItem('name');
-      const savedItems = localStorage.getItem('items');
-      if (token && name) {
-        isLoggedIn.value = true;
-        userName.value = name;
-        items.value = JSON.parse(savedItems || '[]');
-      } else {
-        isLoggedIn.value = false;
-        userName.value = "";
-        items.value = [];
-      }
-    };
+  const token = localStorage.getItem('accesstoken');
+  const name = localStorage.getItem('name');
+  const savedItems = localStorage.getItem('items');
+  if (token && name) {
+    isLoggedIn.value = true;
+    userName.value = name;
+    items.value = JSON.parse(savedItems || '[]').slice(0, 5);  
+  } else {
+    isLoggedIn.value = false;
+    userName.value = "";
+    items.value = [];
+  }
+};
 
     onMounted(checkLoginStatus);
 
@@ -91,6 +95,7 @@ export default {
         alert("번역할 내용을 입력해주세요.");
         return;
       }
+      isTranslating.value = true;
       try {
         let response;
         if (!isLoggedIn.value) {
@@ -98,23 +103,35 @@ export default {
             content: slang.value
           });
           standard.value = response.data.content;
-
         } else {
           response = await axios.post('/api/main',
             { slang: slang.value },
             {
-
               headers: { accesstoken: localStorage.getItem('accesstoken') }
             }
           );
           standard.value = response.data.standard;
-          items.value = response.data.items;
+
+          // 새로운 번역 결과를 items 배열의 맨 앞에 추가
+          const newTranslation = {
+            slang: slang.value,
+            standard: response.data.standard
+          };
+          items.value = [newTranslation, ...items.value];
+
+          // items 배열의 길이를 5개로 제한
+          if (items.value.length > 5) {
+            items.value = items.value.slice(0, 5);
+          }
+
+          // 업데이트된 items를 로컬 스토리지에 저장
           localStorage.setItem('items', JSON.stringify(items.value));
         }
-
       } catch (error) {
         console.error("번역 중 오류 발생:", error);
         alert("번역에 실패했습니다. 다시 시도해주세요.");
+      } finally {
+        isTranslating.value = false;
       }
     };
 
@@ -127,7 +144,8 @@ export default {
       slang,
       standard,
       translate,
-      items
+      items,
+      isTranslating
     };
   },
 };
