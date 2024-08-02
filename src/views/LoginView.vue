@@ -45,18 +45,13 @@ export default {
             'Content-Type': 'application/json',
           }
         });
-
-        console.log(data.headers)
-        console.log(data.data.name)
         if (data.headers.accesstoken) {
-          console.log("로그인 성공, 토큰:", data.headers.accesstoken);
           localStorage.setItem('accesstoken', data.headers.accesstoken);
           localStorage.setItem('name', data.data.name);
           localStorage.setItem('items', JSON.stringify(data.data.items));
           alert("로그인에 성공했습니다.");
           router.push('/');
         } else {
-          console.log(data.headers.accesstoken)
           alert("로그인에 실패했습니다. 응답에 토큰이 없습니다.");
         }
       } catch (error) {
@@ -77,7 +72,6 @@ export default {
         } else {
           alert("로그인에 실패했습니다. 네트워크 상태를 확인해주세요.");
         }
-        console.error("로그인 실패", error);
       }
     };
 
