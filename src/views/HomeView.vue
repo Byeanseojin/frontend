@@ -4,21 +4,31 @@
       <span class="logo"></span>
     </div>
     <nav class="navigation-bar">
-      <span v-if="isLoggedIn" class="user-info">
+      <span @click="goToGitHub" id="githubLink" class="nav-left">프로젝트 소개</span>
+      <span v-if="isLoggedIn" class="user-info nav-right">
         ❣️{{ userName }}님 이용해 주셔서 감사합니다❣️
-        <span @click="logout" id="logoutBtn">로그아웃</span>
+        <span @click="logout" id="logoutBtn" class="nav-button">로그아웃</span>
+        <span @click="goToDeleteAccount" id="deleteAccountBtn" class="nav-button">회원탈퇴</span>
       </span>
-      <span v-else class="nav-login">
-        <span @click="goToLogin" id="loginLink">로그인</span>
-        <span @click="goToSignup" id="signupLink">회원가입</span>
+      <span v-else class="nav-login nav-right">
+        <span @click="goToLogin" id="loginLink" class="nav-button">로그인</span>
+        <span @click="goToSignup" id="signupLink" class="nav-button">회원가입</span>
       </span>
     </nav>
     <div class="main-content">
       <div class="MZLanguage-box">
         <h2>MZ어</h2>
-        <textarea v-model="slang" @keyup.enter.prevent="translate"></textarea>
+        <textarea 
+          v-model="slang" 
+          @keyup.enter="handleEnter"
+          @keydown.enter.prevent
+        ></textarea>
         <div class="button-container">
-          <button class="translate-btn" @click="translate" :disabled="isTranslating">
+          <button 
+            class="translate-btn" 
+            @click="translate" 
+            :disabled="isTranslating"
+          >
             {{ isTranslating ? '번역 중...' : '번역하기' }}
           </button>
         </div>
@@ -56,19 +66,25 @@ export default {
     const isTranslating = ref(false);
 
     const checkLoginStatus = () => {
-  const token = localStorage.getItem('accesstoken');
-  const name = localStorage.getItem('name');
-  const savedItems = localStorage.getItem('items');
-  if (token && name) {
-    isLoggedIn.value = true;
-    userName.value = name;
-    items.value = JSON.parse(savedItems || '[]').slice(0, 5);  
-  } else {
-    isLoggedIn.value = false;
-    userName.value = "";
-    items.value = [];
-  }
-};
+      const token = localStorage.getItem('accesstoken');
+      const name = localStorage.getItem('name');
+      const savedItems = localStorage.getItem('items');
+      if (token && name) {
+        isLoggedIn.value = true;
+        userName.value = name;
+
+        try {
+          items.value = JSON.parse(savedItems) || [];
+        } catch (error) {
+          console.error("Failed to parse items from localStorage:", error);
+          items.value = [];
+        }
+      } else {
+        isLoggedIn.value = false;
+        userName.value = "";
+        items.value = [];
+      }
+    };
 
     onMounted(checkLoginStatus);
 
@@ -88,6 +104,14 @@ export default {
 
     const goToSignup = () => {
       router.push("/signup");
+    };
+
+    const goToGitHub = () => {
+      window.open('https://github.com/teamMZtoX', '_blank');
+    };
+
+    const goToDeleteAccount = () => {
+      router.push("/deleteaccount");
     };
 
     const translate = async () => {
@@ -112,19 +136,16 @@ export default {
           );
           standard.value = response.data.standard;
 
-          // 새로운 번역 결과를 items 배열의 맨 앞에 추가
           const newTranslation = {
             slang: slang.value,
             standard: response.data.standard
           };
           items.value = [newTranslation, ...items.value];
 
-          // items 배열의 길이를 5개로 제한
           if (items.value.length > 5) {
             items.value = items.value.slice(0, 5);
           }
 
-          // 업데이트된 items를 로컬 스토리지에 저장
           localStorage.setItem('items', JSON.stringify(items.value));
         }
       } catch (error) {
@@ -135,17 +156,27 @@ export default {
       }
     };
 
+    const handleEnter = (event) => {
+      if (!isTranslating.value) {
+        translate();
+      }
+      event.preventDefault();
+    };
+
     return {
       userName,
       logout,
       isLoggedIn,
       goToLogin,
       goToSignup,
+      goToGitHub,
+      goToDeleteAccount,
       slang,
       standard,
       translate,
       items,
-      isTranslating
+      isTranslating,
+      handleEnter
     };
   },
 };
@@ -168,7 +199,6 @@ html {
 .header-container {
   display: flex;
   justify-content: center;
-  /* 로고를 좌우 중앙으로 정렬 */
   align-items: center;
   padding: 20px;
   background-color: white;
@@ -177,30 +207,39 @@ html {
 .logo {
   background-image: url('../assets/logo.png');
   background-size: contain;
-  /* 이미지가 요소 안에 맞도록 조정 */
   background-repeat: no-repeat;
-  /* 이미지 반복 안 함 */
   background-position: center;
-  /* 이미지 중앙에 배치 */
   width: 300px;
-  /* 원하는 크기로 설정 */
   height: 100px;
-  /* 원하는 크기로 설정 */
 }
 
 .navigation-bar {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   align-items: center;
   padding: 10px 20px;
 }
 
-.nav-login span,
-#logoutBtn {
+.nav-left {
+  margin-right: auto;
+  cursor: pointer;
+  color: #5d7eaad0;
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+}
+
+.nav-button {
   margin-left: 10px;
   cursor: pointer;
-  color: #4679BD;
+  color: #538ad1;
 }
+
+.nav-button:active {
+    color: #386698;
+  }
 
 .main-content {
   display: flex;
@@ -233,7 +272,6 @@ html {
 .MZLanguage-box {
   position: relative;
   padding-bottom: 50px;
-  /* 버튼을 위한 공간 확보 */
   margin-right: 50px;
 }
 
@@ -260,21 +298,22 @@ textarea {
 }
 
 .translate-btn {
-  background-color: #FFC0CB;
+  background-color: #f8b7d0dc;
   border: none;
   border-radius: 10px;
   padding: 10px 20px;
   color: black;
   cursor: pointer;
   width: auto;
-  /* 내용에 맞게 너비 조정 */
   white-space: nowrap;
-  /* 텍스트가 한 줄로 유지되도록 함 */
 }
 
 .translate-btn:hover {
-  background-color: #f8a2b0;
-  /* 마우스 오버 시 배경색 변경 */
+  background-color: #f7b0cc;
+}
+
+.translate-btn:active {
+  background-color: #fc90b9dc;
 }
 
 .recent-translations {
@@ -315,7 +354,5 @@ textarea {
     margin: 0px 0px 30px 0px;
     height: 250px;
   }
-
-
 }
 </style>
