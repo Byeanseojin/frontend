@@ -122,7 +122,6 @@ export default {
         } else {
           alert("회원가입에 실패했습니다. 네트워크 상태를 확인해주세요.");
         }
-        console.error("회원가입 실패", error);
       }
     };
 
