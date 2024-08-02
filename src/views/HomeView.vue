@@ -76,7 +76,6 @@ export default {
         try {
           items.value = JSON.parse(savedItems) || [];
         } catch (error) {
-          console.error("Failed to parse items from localStorage:", error);
           items.value = [];
         }
       } else {
@@ -149,7 +148,6 @@ export default {
           localStorage.setItem('items', JSON.stringify(items.value));
         }
       } catch (error) {
-        console.error("번역 중 오류 발생:", error);
         alert("번역에 실패했습니다. 다시 시도해주세요.");
       } finally {
         isTranslating.value = false;
